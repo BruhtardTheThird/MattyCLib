@@ -10,16 +10,16 @@ pi = sp.pi
 sin, cos, tan, sqrt, e= sp.sin, sp.cos, sp.tan, sp.sqrt, sp.exp
 
 Field1 = sp.Array([
-    p*sp.sin(phi)*sp.cos(theta),
-    p*sp.sin(phi)*sp.sin(theta),
-    p*sp.cos(phi)
+    x**2+z**2,
+    x*y*z,
+    sp.exp(y)
     ])
 
 
 
 Point1 = [7,0,0]
 
-varList1 = [p,phi,theta]
+varList1 = [x,y,z]
 varList2 = [u,v]
 
 varTupleList1 = [(phi,theta)]
@@ -31,24 +31,22 @@ parBoundsTupleList1 = [(0,np.pi/2),(0,2*np.pi)]
 #make sure for a 3-parameter equation, you substitute in the value of the constant parameter before executing the function. 
 #This can be done by simply making a statement such that:
 
-InField1 = []
-for i in Field1:
-    InField1.append(i.subs(p,2)) # the tuple in i.subs() needs to be excludedVariable,excludedVariableValue.
-Field2 = sp.Array(InField1)
+#InField1 = []
+#for i in Field1:
+#    InField1.append(i.subs(p,2)) # the tuple in i.subs() needs to be excludedVariable,excludedVariableValue.
+#Field2 = sp.Array(InField1)
 #    and then using Field2 for the argument in NumpyParaGraph
 
-div1 = Div(Field1)
-ediv1 = Div(Field1,Point1)
+div1 = Div(Field1,VarList=varList1)
+ediv1 = Div(Field1,Point1,VarList=varList1)
 print('Divergence expression is:\n',div1,'\nDivergence evaluation is:\n',ediv1)
 curl1 = Curl(Field1,VarList=varList1)
 ecurl1 = Curl(Field1,Point1,varList1)
 print('Curl expression is:\n',curl1,'\nCurl evaluation is:\n',ecurl1)
-#try:
-#    potFun = findPotntialFnction(Field1,VarList=varList1)
-#    print('A potential function is: \n',potFun)
-#except:
-#    print('Field:\n',Field1,'\nIs not conservative. Therefore a potential function does not exist for the field.')
-Graph = pmg.NumpyParaGraph(Field2,varTupleList1,parBoundsTupleList1)
-plt.colorbar(Graph)
-plt.axis('equal')
-plt.show()
+potFun = findPotntialFnction(Field1,VarList=varList1)
+if potFun is not None:
+    print('Potential function is:\n',potFun)
+#Graph = pmg.NumpyParaGraph(Field2,varTupleList1,parBoundsTupleList1)
+#plt.colorbar(Graph)
+#plt.axis('equal')
+#plt.show()

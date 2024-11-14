@@ -55,7 +55,8 @@ def Curl(Field,Point=None,VarList=None):
         return curlEval
 def findPotntialFnction(Field,VarList=None):
     if Curl(Field,VarList=VarList).tolist()!=[0]*len(Field):
-        raise ValueError('Field:',Field,'Is not conservative. Therefore such a function does not exist.')
+        print('Field:',Field,'Is not conservative. Therefore such a function does not exist.')
+        return None
     if VarList is None:
         VarList = [x,y,z]
         warnings.warn('WARNING: Absence of VarList argument might break the output, as variables are set to [x,y,z]!',UserWarning)
