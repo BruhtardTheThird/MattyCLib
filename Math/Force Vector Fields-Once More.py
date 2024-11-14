@@ -24,7 +24,7 @@ varList2 = [u,v]
 
 varTupleList1 = [(phi,theta)]
 
-parBoundsTupleList1 = [(0,np.pi),(0,2*np.pi)]
+parBoundsTupleList1 = [(0,np.pi/2),(0,2*np.pi)]
 
 #the bounds for a 3 parameter equation must exclude a parameter, otherwise the function will try to graph a 4-dimensional shape.
 #also, make sure, if one parameter is constant, that it is at the end of the TupleLists, and the varLists don't necessarily reflect that.
@@ -33,10 +33,9 @@ parBoundsTupleList1 = [(0,np.pi),(0,2*np.pi)]
 
 InField1 = []
 for i in Field1:
-    InField1.append(i.subs(p,2))
+    InField1.append(i.subs(p,2)) # the tuple in i.subs() needs to be excludedVariable,excludedVariableValue.
 Field2 = sp.Array(InField1)
-#   and then using Field2 for the argument in NumpyParaGraph
-
+#    and then using Field2 for the argument in NumpyParaGraph
 
 div1 = Div(Field1)
 ediv1 = Div(Field1,Point1)
