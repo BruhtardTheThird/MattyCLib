@@ -27,7 +27,7 @@ def NumpyParaGraph(ListFunction,VarTupleList,ParBoundsTupleList):
     for j in ParBoundsTupleList:
         if j[0] == j[1]:
             raise TypeError('Expected 3-dimensional parameterization, too many variables.')
-        boundsList.append(np.linspace(*j,100))#creates a list of arrays of 100 values between the bounds specified by ParBoundsTupleList
+        boundsList.append(np.linspace(*j,25))#creates a list of arrays of 100 values between the bounds specified by ParBoundsTupleList
     meshTuple = np.meshgrid(*tuple(boundsList)) 
         #creates a tuple that allows a numpy function's variables to be evaluated on all points specified by the bounds
     ax = plt.figure().add_subplot(111,projection='3d') 

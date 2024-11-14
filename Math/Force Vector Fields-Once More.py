@@ -22,16 +22,19 @@ Point1 = [7,0,0]
 varList1 = [p,phi,theta]
 varList2 = [u,v]
 
-varTupleList1 = [(phi,theta,p)]
+varTupleList1 = [(phi,theta)]
 
 parBoundsTupleList1 = [(0,np.pi),(0,2*np.pi)]
+
 #the bounds for a 3 parameter equation must exclude a parameter, otherwise the function will try to graph a 4-dimensional shape.
 #also, make sure, if one parameter is constant, that it is at the end of the TupleLists, and the varLists don't necessarily reflect that.
 #make sure for a 3-parameter equation, you substitute in the value of the constant parameter before executing the function. 
 #This can be done by simply making a statement such that:
 
-#InField1 = []
-#Field2 = sp.Array(InField1.append(i.subs(sp.Symbol,'constant') for i in Field1))
+InField1 = []
+for i in Field1:
+    InField1.append(i.subs(p,2))
+Field2 = sp.Array(InField1)
 #   and then using Field2 for the argument in NumpyParaGraph
 
 
@@ -46,5 +49,7 @@ print('Curl expression is:\n',curl1,'\nCurl evaluation is:\n',ecurl1)
 #    print('A potential function is: \n',potFun)
 #except:
 #    print('Field:\n',Field1,'\nIs not conservative. Therefore a potential function does not exist for the field.')
-pmg.NumpyParaGraph(Field1,varTupleList1,parBoundsTupleList1)
+Graph = pmg.NumpyParaGraph(Field2,varTupleList1,parBoundsTupleList1)
+plt.colorbar(Graph)
+plt.axis('equal')
 plt.show()
