@@ -81,6 +81,20 @@ def ParametrizeExpr(Expression,MappedArray,VarList=None):
         for i,j in zip(Expression.free_symbols,MappedArray):
             Expression = Expression.subs(i,j)
         return Expression
+def HardOint(Field=sp.Array,VarList=list,ParaField=sp.Array,ParVar=sp.Symbol,Eval=bool,ParVarBounds=tuple):
+    ParametrizedField = []
+    for i in Field:
+        for j,k in zip(ParaField,VarList):
+            i.subs(k,j)
+        ParametrizedField.append(i)
+    for i in enumerate(ParaField):
+        integrand = integrand + ParametrizedField[i]*sp.Abs(sp.diff(ParaField[i],ParVar))
+    hardIntegral = sp.Integral(integrand,(ParVar,ParVarBounds))
+    if Eval == False:
+        print('Integrand for HardOint =\n',integrand)
+        return hardIntegral
+    else:
+        return hardIntegral.doit()
 
 
 #print(Jacobian(u*sp.cos(v),u*sp.sin(v)))

@@ -1,5 +1,13 @@
 import sympy as sp
-from MTHFunctions import Jacobian
+import os
+import sys
+
+# go up one directory level from this file's directory:
+path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+# prepend parent directory to the system path:
+sys.path.insert(0, path)
+
+from FunctionLib.MTHFunctions import Jacobian
 x, y, z, u, v, w = sp.symbols('x,y,z,u,v,w')
 r, theta = sp.symbols('r, theta')
 p, phi = sp.symbols('p, phi')
