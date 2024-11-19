@@ -3,6 +3,33 @@ from sympy import diff
 from sys import argv
 import warnings
 x, y, z, u, v, w = sp.symbols('x,y,z,u,v,w')
+def InteriorProduct(Array1, Array2):
+    if len(Array1) != len(Array2):
+        raise ValueError('The arrays do not have the same length!')
+    productExpr = 0
+    for i in range(len(Array1)):
+        productExpr = productExpr + Array1[i]*Array2[i]
+    return productExpr
+def CrossProduct(Array1, Array2):
+    if len(Array1) != len(Array2):
+        raise ValueError('The arrays do not have the same length!')
+    if len(Array1) == 3:
+        ProductList = [
+            sp.trigsimp(Array1[1]*Array2[2]-Array1[2]*Array2[1]),
+            sp.trigsimp(Array1[2]*Array2[0]-Array1[0]*Array2[2]),
+            sp.trigsimp(Array1[0]*Array2[1]-Array1[1]*Array2[0])
+            ]
+        return ProductList
+    if len(Array1)==2:
+        ProductList = [
+            0,
+            0,
+            sp.trigsimp(Array1[0]*Array2[1]-Array1[1]*Array2[0])
+        ]
+        return ProductList
+    else:
+        raise IndexError('Expected arrays of length 2 or 3, instead got arrays of length:',len(Array1))
+
 def Jacobian(x,y,z=None):
     """For a transformation T(x,y,z) = T(u,v,w), this function defines the Jacobian,
     taking x, y, and sometimes z as functions of u, v, and sometimes w."""
@@ -39,13 +66,15 @@ def Curl(Field,Point=None,VarList=None):
         for i in Field:
             iDiff = []
             for j in VarList:
-                iDiff.append(diff(i,j))
+                iDiff.append(sp.trigsimp(diff(i,j)))
             gList.append(iDiff)
-        curlAray = sp.Array([gList])
+            curlAray = sp.Array([gList])
     if len(curlAray) == 3:
-        curlAray = sp.Array([gList[2][1]-gList[1][2],gList[0][2]-gList[2],[0],gList[1][0]-gList[0][1]])
+        curlAray = sp.Array([sp.trigsimp(gList[2][1]-gList[1][2]),
+                    sp.trigsimp(gList[0][2]-gList[2],[0]),
+                    sp.trigsimp(gList[1][0]-gList[0][1])])
     else:
-        curlAray = sp.Array([0,0,gList[1][0]-gList[0][1]])
+        curlAray = sp.Array([0,0,sp.trigsimp(gList[1][0]-gList[0][1])])
     if Point is None:
         return curlAray
     else:
@@ -81,21 +110,36 @@ def ParametrizeExpr(Expression,MappedArray,VarList=None):
         for i,j in zip(Expression.free_symbols,MappedArray):
             Expression = Expression.subs(i,j)
         return Expression
-def HardOint(Field=sp.Array,VarList=list,ParaField=sp.Array,ParVar=sp.Symbol,Eval=bool,ParVarBounds=tuple):
-    ParametrizedField = []
-    for i in Field:
-        for j,k in zip(ParaField,VarList):
-            i.subs(k,j)
-        ParametrizedField.append(i)
-    for i in enumerate(ParaField):
-        integrand = integrand + ParametrizedField[i]*sp.Abs(sp.diff(ParaField[i],ParVar))
-    hardIntegral = sp.Integral(integrand,(ParVar,ParVarBounds))
-    if Eval == False:
-        print('Integrand for HardOint =\n',integrand)
-        return hardIntegral
+def CountourInt(Field,VarList,VarBounds=None,Eval=False,Hard=True,ParaField=None,ParVar=None,ParVars=None,ParVarBounds=None,):
+    if Hard == True and ParVars == None:
+        ParametrizedField = []
+        for i in Field:
+            ParametrizedField.append(i.subs(zip(VarList,ParaField)))
+        integrand = 0
+        for i in range(len(ParaField)):
+            integrand = integrand + ParametrizedField[i]*sp.diff(ParaField[i],ParVar)
+        hardIntegral = sp.Integral(integrand,(ParVar,ParVarBounds[0]))
+        if Eval == False:
+            print('Integrand for CounterInt =\n',integrand)
+            return hardIntegral
+        else:
+            return hardIntegral.doit()
     else:
-        return hardIntegral.doit()
-
+        if VarBounds==None:
+            StokesIntegrand = (InteriorProduct(Curl(Field,VarList=VarList),[1,1,1])).subs(zip(VarList,ParaField))
+            if ParaField == [sp.Symbol('r')*sp.cos(sp.Symbol('theta')),sp.Symbol('r')*sp.sin(sp.Symbol('theta'))] or ParaField == [sp.Symbol('r')*sp.cos(sp.Symbol('theta')),sp.Symbol('r')*sp.sin(sp.Symbol('theta')),sp.Symbol('z')]:
+                StokesIntegrand = StokesIntegrand*sp.Symbol('r')
+            StokesIntegral = sp.Integral(sp.simplify(StokesIntegrand),(ParVars[0],ParVarBounds[0]),(ParVars[1],ParVarBounds[1]))
+            if Eval == False:
+                print('Integrand for ContourInt =\n',StokesIntegrand)
+                return StokesIntegral
+            return StokesIntegral.doit()
+        StokesIntegrand = InteriorProduct(Curl(Field,VarList=VarList),[1,1,1])
+        StokesIntegral = sp.Integral(StokesIntegrand,(VarList[0],VarBounds[0]),(VarList[1],VarBounds[1]))
+        if Eval == False:
+            print('Integrand for ContourInt =\n',StokesIntegrand)
+            return StokesIntegral
+        return StokesIntegral.doit()
 
 #print(Jacobian(u*sp.cos(v),u*sp.sin(v)))
 #matrix1 = sp.Matrix([[diff(u*sp.sin(v)*sp.cos(w),u),diff(u*sp.sin(v)*sp.cos(w),v)],[diff(u*sp.sin(v)*sp.sin(w),u),diff(u*sp.sin(v)*sp.sin(w),v)]])
