@@ -29,6 +29,7 @@ def CrossProduct(Array1, Array2):
         return ProductList
     else:
         raise IndexError('Expected arrays of length 2 or 3, instead got arrays of length:',len(Array1))
+
 def Jacobian(x,y,z=None):
     """For a transformation T(x,y,z) = T(u,v,w), this function defines the Jacobian,
     taking x, y, and sometimes z as functions of u, v, and sometimes w."""
@@ -139,6 +140,7 @@ def CountourInt(Field,VarList,VarBounds=None,Eval=False,Hard=True,ParaField=None
             print('Integrand for ContourInt =\n',StokesIntegrand)
             return StokesIntegral
         return StokesIntegral.doit()
+
 #print(Jacobian(u*sp.cos(v),u*sp.sin(v)))
 #matrix1 = sp.Matrix([[diff(u*sp.sin(v)*sp.cos(w),u),diff(u*sp.sin(v)*sp.cos(w),v)],[diff(u*sp.sin(v)*sp.sin(w),u),diff(u*sp.sin(v)*sp.sin(w),v)]])
 #matrix1 = matrix1.col_insert(2, sp.Matrix([[diff(u*sp.sin(v)*sp.cos(w),w)],[diff(u*sp.sin(v)*sp.sin(w),w)]]))
