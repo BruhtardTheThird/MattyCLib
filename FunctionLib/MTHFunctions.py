@@ -29,7 +29,12 @@ def CrossProduct(Array1, Array2):
         return ProductList
     else:
         raise IndexError('Expected arrays of length 2 or 3, instead got arrays of length:',len(Array1))
-
+def Magnitude(ArrayLike):
+    MagExp = 0
+    for i in ArrayLike:
+        MagExp = MagExp + i**2
+    ReturnExp = sp.sqrt(sp.simplify(MagExp))
+    return ReturnExp
 def Jacobian(x,y,z=None):
     """For a transformation T(x,y,z) = T(u,v,w), this function defines the Jacobian,
     taking x, y, and sometimes z as functions of u, v, and sometimes w."""
@@ -140,6 +145,28 @@ def CountourInt(Field,VarList,VarBounds=None,Eval=False,Hard=True,ParaField=None
             print('Integrand for ContourInt =\n',StokesIntegrand)
             return StokesIntegral
         return StokesIntegral.doit()
+def SurfArea(Surface,VarList,ParaField=sp.Array|None,ParVarList=list|None,Eval=True,ParVarBounds=list|None,Easy=False,Left=True):
+    if Easy == False:
+        ParaSurf = []
+        for i in Surface:
+            ParaSurf.append(i.subs(zip(VarList,ParaField)))
+        NormalPre = []
+        for j in range(2):
+            NormalPre.append([diff(ParaField[i],ParVarList[j]) for i in range(3)])
+        Integrand = Magnitude(CrossProduct(NormalPre[0],NormalPre[1]))
+    else:
+        Integrand = sp.sqrt(diff(Surface[2],VarList[0])**2+diff(Surface[2],VarList[1])**2+1)
+    if Left == True:
+        Integral = sp.Integral(Integrand,(VarList[0],ParVarBounds[0]),(VarList[1],ParVarBounds[1]))
+    else:
+        Integral = sp.Integral(Integrand,(VarList[1],ParVarBounds[1]),(VarList[0],ParVarBounds[0]))
+    if Eval == True:
+        print('Surface Integral integrand is: \n',Integrand,'\nSurface Integral is:\n',Integral)
+        EvalDIntegral = Integral.doit()
+        return EvalDIntegral
+    else:
+        print('Surface Integral integrand is: \n',Integrand,'\nSurface Integral is:\n',Integral)
+        return Integral
 
 #print(Jacobian(u*sp.cos(v),u*sp.sin(v)))
 #matrix1 = sp.Matrix([[diff(u*sp.sin(v)*sp.cos(w),u),diff(u*sp.sin(v)*sp.cos(w),v)],[diff(u*sp.sin(v)*sp.sin(w),u),diff(u*sp.sin(v)*sp.sin(w),v)]])
