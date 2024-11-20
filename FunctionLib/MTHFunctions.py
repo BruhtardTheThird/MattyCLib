@@ -15,8 +15,8 @@ def CrossProduct(Array1, Array2):
         raise ValueError('The arrays do not have the same length!')
     if len(Array1) == 3:
         ProductList = [
-            sp.trigsimp(Array1[1]*Array2[2]-Array1[2]*Array2[1]),
-            sp.trigsimp(Array1[2]*Array2[0]-Array1[0]*Array2[2]),
+            sp.trigsimp(Array1[2]*Array2[1]-Array1[1]*Array2[2]),
+            sp.trigsimp(Array1[0]*Array2[2]-Array1[2]*Array2[0]),
             sp.trigsimp(Array1[0]*Array2[1]-Array1[1]*Array2[0])
             ]
         return ProductList
@@ -35,16 +35,14 @@ def Magnitude(ArrayLike):
         MagExp = MagExp + i**2
     ReturnExp = sp.sqrt(sp.simplify(MagExp))
     return ReturnExp
-def Jacobian(x,y,z=None):
+def Jacobian(MappedField,VarList):
     """For a transformation T(x,y,z) = T(u,v,w), this function defines the Jacobian,
     taking x, y, and sometimes z as functions of u, v, and sometimes w."""
-    matrix = sp.Matrix([[diff(x,u),diff(x,v)],[diff(y,u),diff(y, v)]])
-    if z is None:
-        return sp.trigsimp(matrix.det())
-    else:
-        matrix = matrix.col_insert(2, sp.Matrix([[diff(x,w)],[diff(y,w)]]))
-        matrix = matrix.row_insert(2, sp.Matrix([[diff(z,u),diff(z,v),diff(z,w)]]))
-        return sp.trigsimp(matrix.det())
+    preMatrix = []
+    for i in MappedField:
+        preMatrix.append([diff(i,j) for j in VarList])
+    matrix = sp.Matrix(preMatrix)
+    return sp.trigsimp(matrix.det())
 def Div(Field,Point=None,VarList=None):
     """For a force vector field, F = <P,Q,R> and a point O = <x,y,z> (R&z = 0 for 2D) the divergence of F at point O is
     equal to the dot product of F and Del. Both arguments are input as lists of functions in terms of x, y, and z."""
@@ -145,28 +143,28 @@ def CountourInt(Field,VarList,VarBounds=None,Eval=False,Hard=True,ParaField=None
             print('Integrand for ContourInt =\n',StokesIntegrand)
             return StokesIntegral
         return StokesIntegral.doit()
-def SurfArea(Surface,VarList,ParaField=sp.Array|None,ParVarList=list|None,Eval=True,ParVarBounds=list|None,Easy=False,Left=True):
+def SurfArea(Surface,VarList,ParaField=list|None,ParVarList=list|None,Eval=True,ParVarBounds=list|None,Easy=False,Left=True):
     if Easy == False:
         ParaSurf = []
         for i in Surface:
             ParaSurf.append(i.subs(zip(VarList,ParaField)))
         NormalPre = []
         for j in range(2):
-            NormalPre.append([diff(ParaField[i],ParVarList[j]) for i in range(3)])
-        Integrand = Magnitude(CrossProduct(NormalPre[0],NormalPre[1]))
+            NormalPre.append([sp.trigsimp(diff(ParaSurf[i],ParVarList[j])) for i in range(3)])
+        Integrand = sp.factor(Magnitude(CrossProduct(NormalPre[0],NormalPre[1])))
+        VarList = ParVarList
     else:
         Integrand = sp.sqrt(diff(Surface[2],VarList[0])**2+diff(Surface[2],VarList[1])**2+1)
-    if Left == True:
-        Integral = sp.Integral(Integrand,(VarList[0],ParVarBounds[0]),(VarList[1],ParVarBounds[1]))
-    else:
-        Integral = sp.Integral(Integrand,(VarList[1],ParVarBounds[1]),(VarList[0],ParVarBounds[0]))
     if Eval == True:
+        if Left == True:
+            Integral = sp.Integral(Integrand,(VarList[0],ParVarBounds[0]),(VarList[1],ParVarBounds[1]))
+        else:
+            Integral = sp.Integral(Integrand,(VarList[1],ParVarBounds[1]),(VarList[0],ParVarBounds[0]))
         print('Surface Integral integrand is: \n',Integrand,'\nSurface Integral is:\n',Integral)
         EvalDIntegral = Integral.doit()
         return EvalDIntegral
     else:
-        print('Surface Integral integrand is: \n',Integrand,'\nSurface Integral is:\n',Integral)
-        return Integral
+        return Integrand
 
 #print(Jacobian(u*sp.cos(v),u*sp.sin(v)))
 #matrix1 = sp.Matrix([[diff(u*sp.sin(v)*sp.cos(w),u),diff(u*sp.sin(v)*sp.cos(w),v)],[diff(u*sp.sin(v)*sp.sin(w),u),diff(u*sp.sin(v)*sp.sin(w),v)]])
@@ -174,5 +172,5 @@ def SurfArea(Surface,VarList,ParaField=sp.Array|None,ParVarList=list|None,Eval=T
 #print(matrix1)
 #Testing with the matrix created by the function.
 #print(Jacobian(u*sp.sin(v)*sp.cos(w),u*sp.sin(v)*sp.sin(w),u*sp.cos(v)))
-assert Jacobian(u*sp.cos(v),u*sp.sin(v)) == u , 'The jacobian of a polar transformation should equal r = u.'
-assert Jacobian(u*sp.sin(v)*sp.cos(w),u*sp.sin(v)*sp.sin(w),u*sp.cos(v)) == (u**2)*sp.sin(v), 'The jacobian of the mapping from cartesian to spherical co-ordinates should equal p^2sin(phi) = u^2sin(v)'
+assert Jacobian([u*sp.cos(v),u*sp.sin(v)],[u,v]) == u , 'The jacobian of a polar transformation should equal r = u.'
+assert Jacobian([u*sp.sin(v)*sp.cos(w),u*sp.sin(v)*sp.sin(w),u*sp.cos(v)],[u,v,w]) == (u**2)*sp.sin(v), 'The jacobian of the mapping from cartesian to spherical co-ordinates should equal p^2sin(phi) = u^2sin(v)'
