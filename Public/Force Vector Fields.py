@@ -12,7 +12,7 @@ import FunctionLib.MTHFunctions as mtf
 import FunctionLib.ParametricGraphing as pmg
 import matplotlib.pyplot as plt
 import numpy as np
-x, y, z, u, v, w = sp.symbols('x,y,z,u,v,w')
+x, y, z, u, v, w, s, t= sp.symbols('x,y,z,u,v,w,s,t')
 a,b = sp.symbols('a,b',)
 r, theta = sp.symbols('r, theta',)
 p, phi = sp.symbols('p, phi')
@@ -20,24 +20,28 @@ pi = sp.pi
 sin, cos, tan, sqrt, e= sp.sin, sp.cos, sp.tan, sp.sqrt, sp.exp
 
 Field1 = sp.Array([
-    x/2,
-    y/2,
-    0
+    2*x*y,
+    -x**2,
+    2*y*z
 ])
 Surface1 = sp.Array([
     x,
     y,
-    25+x+y+x**2
+    -x*sp.exp(y)
 ])
-
+Surface2 = sp.Array([
+    s*sp.cos(t),
+    4,
+    s*sp.sin(t)
+])
+Expr1 = 3*(z*x**2+z*y**2)
 
 Point1 = [7,0,0]
 
-t = sp.Symbol('t')
 
 parameterField1 = [
-    r*sp.cos(theta),
-    r*sp.sin(theta)
+    y,
+    z,
 ]
 
 
@@ -47,10 +51,10 @@ varList2 = [x,y]
 
 varTupleList1 = [(x,y)]
 
-parVarList1 = [r,theta]
+parVarList1 = [x,y]
 
-parBoundsTupleList1 = [(0,2),(3,9)]
-
+parBoundsTupleList1 = [(0,4),(0,6)]
+parBoundsTupleList2 = [(0,2),(0,2*sp.pi)]
 
 div1 = mtf.Div(Field1)
 ediv1 = mtf.Div(Field1,Point1)
@@ -66,7 +70,8 @@ print('Curl expression is:\n',curl1,'\nCurl evaluation is:\n',ecurl1)
 #    print('Field:\n',Field1,'\nIs not conservative. Therefore a potential function does not exist for the field.')
 #Oint = CountourInt(Field1,VarList=varList2,Hard=True,Eval=True,ParVarBounds=parBoundsTupleList1,ParVar=t,ParaField=parameterField,)
 #print(Oint)
-print(mtf.SurfArea(Surface1,varList2,ParVarList=parVarList1,ParaField=parameterField1,Eval=True,Easy=True,ParVarBounds=parBoundsTupleList1,Left=False))
+#intExp1 = (mtf.ParametrizeExpr(Expr1,Surface1,VarList=varList1))
+#print(mtf.SurfArea(Surface1,varList2,ParVarList=parVarList1,ParaField=parameterField1,Eval=True,Easy=False,ParVarBounds=parBoundsTupleList1,Left=False,IntExpr=intExp1))
 #print(mtf.Magnitude(mtf.CrossProduct([-v*sp.sin(u),v*sp.cos(u),1],[sp.cos(u),sp.sin(u),0])))
 #NormalPre = []
 #for j in range(2):
@@ -74,4 +79,5 @@ print(mtf.SurfArea(Surface1,varList2,ParVarList=parVarList1,ParaField=parameterF
 #print(NormalPre)
 #pmg.NumpyParaGraph(Field1,varTupleList1,parBoundsTupleList1)
 #plt.show()
-
+Int1 = mtf.SurfFlux(Surface1,Field1,varList1,parVarList1,parBoundsTupleList1,Eval=True,Left=False,Upward=True)
+print(Int1)

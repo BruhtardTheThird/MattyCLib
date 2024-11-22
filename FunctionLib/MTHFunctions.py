@@ -17,7 +17,7 @@ def CrossProduct(Array1, Array2):
         ProductList = [
             sp.trigsimp(Array1[2]*Array2[1]-Array1[1]*Array2[2]),
             sp.trigsimp(Array1[0]*Array2[2]-Array1[2]*Array2[0]),
-            sp.trigsimp(Array1[0]*Array2[1]-Array1[1]*Array2[0])
+            sp.trigsimp(Array1[1]*Array2[0]-Array1[0]*Array2[1])
             ]
         return ProductList
     if len(Array1)==2:
@@ -39,6 +39,8 @@ def Jacobian(MappedField,VarList):
     """For a transformation T(x,y,z) = T(u,v,w), this function defines the Jacobian,
     taking x, y, and sometimes z as functions of u, v, and sometimes w."""
     preMatrix = []
+    if len(VarList) != len(MappedField):
+        raise ValueError('The determinant of a non-square matrix is not defined in euclidian geometry.') 
     for i in MappedField:
         preMatrix.append([diff(i,j) for j in VarList])
     matrix = sp.Matrix(preMatrix)
@@ -143,7 +145,7 @@ def CountourInt(Field,VarList,VarBounds=None,Eval=False,Hard=True,ParaField=None
             print('Integrand for ContourInt =\n',StokesIntegrand)
             return StokesIntegral
         return StokesIntegral.doit()
-def SurfArea(Surface,VarList,ParaField=list|None,ParVarList=list|None,Eval=True,ParVarBounds=list|None,Easy=False,Left=True):
+def SurfArea(Surface,VarList,ParaField=list|None,ParVarList=list|None,Eval=True,ParVarBounds=list|None,Easy=False,Left=True,IntExpr=None):
     if Easy == False:
         ParaSurf = []
         for i in Surface:
@@ -155,11 +157,35 @@ def SurfArea(Surface,VarList,ParaField=list|None,ParVarList=list|None,Eval=True,
         VarList = ParVarList
     else:
         Integrand = sp.sqrt(diff(Surface[2],VarList[0])**2+diff(Surface[2],VarList[1])**2+1)
+    if IntExpr != None:
+        Integrand = Integrand*IntExpr
+        if ParVarList != None:
+            VarList=ParVarList
     if Eval == True:
         if Left == True:
             Integral = sp.Integral(Integrand,(VarList[0],ParVarBounds[0]),(VarList[1],ParVarBounds[1]))
         else:
             Integral = sp.Integral(Integrand,(VarList[1],ParVarBounds[1]),(VarList[0],ParVarBounds[0]))
+        print('Surface Integral integrand is: \n',Integrand,'\nSurface Integral is:\n',Integral)
+        EvalDIntegral = Integral.doit()
+        return EvalDIntegral
+    else:
+        return Integrand
+def SurfFlux(Surface,Field,VarList,ParaVarList,Bounds=list|None,Eval=True,Left=True,Upward=False):
+    ParaField = []
+    for i in Field:
+        ParaField.append(i.subs(zip(VarList,Surface)))
+    NormalDiffs = []
+    for j in range(2):
+        NormalDiffs.append([sp.trigsimp(diff(Surface[i],ParaVarList[j])) for i in range(3)])
+    Integrand = sp.factor(InteriorProduct(CrossProduct(NormalDiffs[0],NormalDiffs[1]),ParaField))
+    if Upward == True:
+        Integrand = Integrand*-1
+    if Eval == True:
+        if Left == True:
+            Integral = sp.Integral(Integrand,(ParaVarList[0],Bounds[0]),(ParaVarList[1],Bounds[1]))
+        else:
+            Integral = sp.Integral(Integrand,(ParaVarList[1],Bounds[1]),(ParaVarList[0],Bounds[0]))
         print('Surface Integral integrand is: \n',Integrand,'\nSurface Integral is:\n',Integral)
         EvalDIntegral = Integral.doit()
         return EvalDIntegral
